@@ -132,5 +132,5 @@ REST_FRAMEWORK = {
         'knox.auth.TokenAuthentication',
     ]
 }
-#
-# AUTH_USER_MODEL = 'app_calendar.User'
+
+AUTH_USER_MODEL = 'app_calendar.User'

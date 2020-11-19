@@ -1,6 +1,6 @@
-
+from django.contrib.auth.models import AbstractUser
 from django.db import models
-from knox.auth import User
+
 
 
 class Country(models.Model):
@@ -10,8 +10,8 @@ class Country(models.Model):
         return self.country
 
 
-# class User(AbstractUser):
-#     country = models.ForeignKey(Country, on_delete=models.DO_NOTHING, null=True, blank=True)
+class User(AbstractUser):
+    country = models.ForeignKey(Country, on_delete=models.DO_NOTHING, null=True, blank=True)
 
 
 class Event(models.Model):

@@ -1,34 +1,46 @@
-from django.shortcuts import render
-from rest_framework import generics, permissions
+from django.contrib import auth
+from django.contrib.auth import get_user_model
+from rest_framework import status
+from rest_framework.authtoken.models import Token
+from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
-from knox.models import AuthToken
-from app_auth.serializer import UserSerializer, RegisterSerializer
-from django.contrib.auth import login
+from rest_framework.views import APIView
 
-from rest_framework.authtoken.serializers import AuthTokenSerializer
-from knox.views import LoginView as KnoxLoginView
-
-# Register API
-class RegisterAPI(generics.GenericAPIView):
-    serializer_class = RegisterSerializer
-
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        return Response({
-        "user": UserSerializer(user, context=self.get_serializer_context()).data,
-        "token": AuthToken.objects.create(user)[1]
-        })
+from .serializer import UserSerializer, LoginSerializer
 
 
-class LoginAPI(KnoxLoginView):
-    permission_classes = (permissions.AllowAny,)
+User = get_user_model()
 
-    def post(self, request, format=None):
-        serializer = AuthTokenSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
-        login(request, user)
-        return super(LoginAPI, self).post(request, format=None)
+class RegisterView(GenericAPIView):
+    serializer_class = UserSerializer
 
+    def post(self, request):
+        serializer = UserSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+
+            if serializer.user is not None:
+                token = Token.objects.create(user=serializer.user)
+            return Response(f'{token.key}', status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LoginView(GenericAPIView):
+    serializer_class = LoginSerializer
+
+    def post(self, request):
+        data = request.data
+        email = data.get('email', '')
+        password = data.get('password', '')
+        user = auth.authenticate(username=email, password=password)
+
+        if user:
+            token = Token.objects.get(user=user)
+            serializer = UserSerializer(user)
+
+
+            return Response(f'There is your token: {token.key}', status=status.HTTP_200_OK)
+
+        return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
