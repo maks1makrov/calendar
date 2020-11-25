@@ -5,5 +5,7 @@ from app_calendar import views
 urlpatterns = [
     path('list_event', views.ListEvent.as_view()),
     path('create_event', views.CreateEvent.as_view()),
+    path('list_holidays', views.ListHolidays.as_view()),
+
 
 ]
