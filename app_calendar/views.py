@@ -14,15 +14,36 @@ class ListEvent(ListAPIView):
     serializer_class = EventSerializer
     # queryset = Event.objects.all()
     # permission_classes = [permissions.IsAuthenticated]
+    filter_fields = ['start_date']
     def get_queryset(self):
         print(self.request.user)
         return Event.objects.filter(user=self.request.user.id)
 
 
-class ListHolidays(ListAPIView):
-    serializer_class = HolidaySerializer
+class ListEvent_month(ListAPIView):
+    serializer_class = EventSerializer
     # queryset = Event.objects.all()
     # permission_classes = [permissions.IsAuthenticated]
+    filter_fields = ['start_date']
+    def get_queryset(self):
+        print(self.request.user)
+        return Event.objects.filter(user=self.request.user.id, start_date__year=self.kwargs['year'], start_date__month=self.kwargs['month'])
+
+class ListHolidays(ListAPIView):
+    serializer_class = HolidaySerializer
+    queryset = Holiday.objects.all()
+    # permission_classes = [permissions.IsAuthenticated]
+    filter_fields = ['date']
     def get_queryset(self):
         # print(self.request.user)
         return Holiday.objects.filter(country=self.request.user.country)
+
+
+class ListHolidays_month(ListAPIView):
+    serializer_class = HolidaySerializer
+    queryset = Holiday.objects.all()
+    # permission_classes = [permissions.IsAuthenticated]
+    filter_fields = ['date']
+    def get_queryset(self):
+        # print(self.request.user)
+        return Holiday.objects.filter(country=self.request.user.country, date__year=self.kwargs['year'], date__month=self.kwargs['month'])
